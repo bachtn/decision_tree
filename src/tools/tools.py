@@ -43,3 +43,14 @@ def get_dataset(dataset_name, datasets_dict):
     attribute_list = list(data.columns)
     attribute_list.remove(label)
     return data, label, attribute_list
+
+class ObjectView():
+    """
+    Used to access dictionary items as object attributes
+    d = {'a': 1, 'b': 2}
+    o = objectview(d)
+    assert o.a == 1
+    """
+    def __init__(self, d):
+        """d : dictionary"""
+        self.__dict__ = d

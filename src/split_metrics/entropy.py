@@ -13,7 +13,7 @@ def get_vector_entropy(data_vector):
     # Check that the values are categorical
     # Todo take into account the categorical values with numbers (1, 2, 4 ...)
     if is_continuous(data_vector):
-        raise Warning('Entropy can be computed only for categorical data vectors.')
+        raise ValueError('Entropy can be computed only for categorical data vectors.')
     
     vector_entropy = 0
     n = len(data_vector)
@@ -29,7 +29,7 @@ def get_partition_entropy(attribute_vector, target_vector):
     """
     # Todo take into account the categorical values with numbers (1, 2, 4 ...)
     if is_continuous(attribute_vector):
-        raise Warning('Entropy can be computed only for categorical data vectors.')
+        raise ValueError('Entropy can be computed only for categorical data vectors.')
     
     partition_entropy = 0
     n = len(attribute_vector)
