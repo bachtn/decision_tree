@@ -13,9 +13,16 @@ dataset_dict = {
     'income' : {'label': 'income', 'filename': 'adult.csv', 'delimiter': ','}
 }
 
-if __name__=='__main__':
+
+def test_entropy():
     data, label, attribute_list = tools.get_dataset('mushrooms', dataset_dict)
     attribute_vector = data[attribute_list[0]]
     target_vector = data[label]
     print(entropy.get_information_gain(attribute_vector, target_vector))
     print(entropy.get_information_gain_ratio(attribute_vector, target_vector))
+
+if __name__=='__main__':
+    data, label, attribute_list = tools.get_dataset('mushrooms', dataset_dict)
+    attribute_vector = data[attribute_list[0]]
+    target_vector = data[label]
+    test_entropy()
