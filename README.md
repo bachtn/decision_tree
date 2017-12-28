@@ -1,2 +1,6 @@
 # decision_tree
-- implentation of the decision tree algorithm, different split critereon, some prune algorithm
+
+- Implementation of decision tree algorithm
+- Multiple Split metrics (entropy (Information gain, Gain Ratio), gini impurity)
+- Pruning algorithms (Naive pruning, Reduced Error Pruning (REP))
+- Benchmark of multiple algorithms
