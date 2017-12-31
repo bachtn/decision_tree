@@ -6,7 +6,8 @@ from numbers import Number
 
 from node import Node, Leaf, Question
 
-def train_test_split(X, y, train_percent, test_percent):
+def train_test_split(X, y, train_percent, test_percent,
+        display_info=False):
     # offsets
     n = X.shape[0]
     train_offset = int(train_percent*len(X))
@@ -19,9 +20,10 @@ def train_test_split(X, y, train_percent, test_percent):
     y_validation = y.loc[X_validation.index]
     y_test = y.loc[X_test.index]
     
-    print("Data : ", len(X), ", Train : ", len(y_train),
-            ", Test : ", len(y_test), ", Validation : ",
-            len(y_validation))
+    if display_info:
+        print("Data : ", len(X), ", Train : ", len(y_train),
+                ", Test : ", len(y_test), ", Validation : ",
+                len(y_validation))
     
     return (X_train, y_train), (X_validation, y_validation), \
             (X_test, y_test)
@@ -108,3 +110,13 @@ class ObjectView():
     def __init__(self, d):
         """d : dictionary"""
         self.__dict__ = d
+
+def print_tree(node, spacing=""):
+    if isinstance(node, Leaf):
+        print(spacing, node, "\n")
+        return
+    
+    for question, son in node.sons:
+        if question:
+            print(spacing, question)
+        print_tree(son, " ----")

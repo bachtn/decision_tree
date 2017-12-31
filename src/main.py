@@ -7,18 +7,12 @@ from decision_tree import DecisionTree
 dataset_dict = {
     'tennis': {'label': 'PlayTennis', 'filename': 'play_tennis.csv',
         'delimiter': ','},
-    'tennis_continuous': {'label': 'PlayTennis',
-        'filename': 'tennis_continuous.csv', 'delimiter': ','},
     'mushrooms' : {'label': 'class', 'filename': 'mushrooms.csv',
         'delimiter': ','},
     'iris' : {'label': 'class', 'filename': 'iris.csv',
         'delimiter': ','},
     'chess' : {'label': 'result', 'filename': 'chess.csv',
         'delimiter': ','},
-    'abalone' : {'label': 'Rings', 'filename': 'abalone.csv',
-        'delimiter':','},
-    'mammal' : {'label': 'is_mammal', 'filename': 'mammal.csv',
-        'delimiter':','},
     'income' : {'label': 'income', 'filename': 'adult.csv',
         'delimiter': ','}
 }

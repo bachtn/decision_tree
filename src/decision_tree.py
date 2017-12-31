@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import operator
+import copy
 
 from node import Node, Leaf, Question
 import tools.tools as tools
@@ -118,5 +119,5 @@ class DecisionTree:
         predictions = np.array(self.predict(X))
         return (predictions == y).sum() / y.shape[0]
 
-    def prune(self):
+    def prune(self, metric='rep'):
         pass
