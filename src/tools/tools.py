@@ -4,7 +4,7 @@ from numbers import Number
 def is_numeric(value):    
     return isinstance(value, Number)
 
-def is_continuous(data_vector, numeric_threshold=3):
+def is_continuous(data_vector, numeric_threshold=5):
     """ Returns True if the `data_vector` contains continuous values
     @param data_vector (dataframe column)
     @param numeric_threshold (int) the threshold value to detect
@@ -21,8 +21,8 @@ def is_continuous(data_vector, numeric_threshold=3):
             because we do not have a branch corresponding to these values
             in the constructed decision tree.
     """
-    return (is_numeric(data_vector.iloc[0]))
-    #and len(data_vector.value_counts()) > numeric_threshold)
+    return (is_numeric(data_vector.iloc[0]) and 
+            len(data_vector.value_counts()) > numeric_threshold)
 
 
 def get_dataset(dataset_name, datasets_dict):

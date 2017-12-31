@@ -3,6 +3,10 @@ import operator
 from tools.tools import is_continuous
 
 def get_gini_index(target_vector):
+    """ 1 - Sum(square(prob)) for each value in the target vector
+    Count the number of occurences of each value in the target
+    vector and then substract it on the number of elements
+    """
     accuracy = 0
     n = len(target_vector)
     for val_count in target_vector.value_counts():
@@ -10,7 +14,7 @@ def get_gini_index(target_vector):
         accuracy += prob ** 2
     return 1 - accuracy
 
-def get_gini_split(attribute_vector, target_vector):
+def get_gini_split(attribute_vector, target_vector, metric='naive'):
     """ Returns the gini split score
     @return:
         - data = continuous  -> (split_score, split_candidate)
@@ -19,8 +23,9 @@ def get_gini_split(attribute_vector, target_vector):
     candidate_split = None
     parent_gini_idx = get_gini_index(target_vector)
     if is_continuous(attribute_vector):
-        records_gini_idx, candidate_split = get_continuous_gini_index(
-                attribute_vector, target_vector, metric='brute_force')
+        records_gini_idx, candidate_split =\
+                get_continuous_gini_index(attribute_vector,
+                        target_vector, metric)
     else:
         records_gini_idx = get_categorical_gini_index(
                 attribute_vector, target_vector)
@@ -31,9 +36,9 @@ def get_categorical_gini_index(attribute_vector, target_vector):
     n = len(attribute_vector)
     records_gini_idx = 0
     for value, nb_occur in attribute_vector.value_counts().items():
-        current_record_gini_idx = get_gini_index(target_vector[attribute_vector == value])
-        prob =  nb_occur / n
-        records_gini_idx += prob * current_record_gini_idx
+        current_record_gini_idx = get_gini_index(
+                target_vector[attribute_vector == value])
+        records_gini_idx += current_record_gini_idx
     return records_gini_idx
 
 def get_continuous_gini_index(attribute_vector, target_vector,
@@ -56,7 +61,8 @@ def brute_force_gini(attribute_vector, target_vector):
         candidate_gini_index = get_candidate_gini_index(
                 attribute_vector, target_vector, candidate)
         candidates_gini_score.append(candidate_gini_index)
-    best_gini_idx = min(candidates_gini_score)
+    # Get best values
+    best_gini_idx = max(candidates_gini_score) #CHECK min or max
     best_candidate_split = split_candidates[
             candidates_gini_score.index(best_gini_idx)]
     return best_gini_idx, best_candidate_split
@@ -68,13 +74,15 @@ def naive_gini(attribute_vector, target_vector):
             attribute_vector, target_vector, candidate_split)
     return records_gini_idx, candidate_split
 
-def get_candidate_gini_index(attribute_vector, target_vector, candidate_split):
+def get_candidate_gini_index(attribute_vector, target_vector,
+        candidate_split):
     records_gini_idx = 0
     n = len(attribute_vector)
     operators = [operator.le, operator.gt]
     for op in operators:
-        record_gini_idx = get_gini_index(target_vector[op(attribute_vector, candidate_split)])
-        prob = len(attribute_vector[op(attribute_vector, candidate_split)]) / n
+        cond = op(attribute_vector, candidate_split)
+        record_gini_idx = get_gini_index(target_vector[cond])
+        prob = len(attribute_vector[cond]) / n
         records_gini_idx += prob * record_gini_idx
     return records_gini_idx
 
