@@ -1,4 +1,5 @@
-all: check
+all:
+	python3 main.py
 
 check:
 	python3 entropy_test.py
