@@ -78,26 +78,62 @@ class DecisionTree:
                 # Add branchs
                 # Less or equal branch
                 root.add_son(Question(
-                   best_attribute, candidate_split, operator.le),
+                   best_attribute, [candidate_split], operator.le),
                    self.__build_tree(le_branch, y_le, attribute_list))
                 # Greater than branch
                 root.add_son(Question(
-                   best_attribute, candidate_split, operator.gt),
+                   best_attribute, [candidate_split], operator.gt),
                    self.__build_tree(gt_branch, y_gt, attribute_list))
             else:
                 # Categorical data
                 # get the branchs and their attribute_value
                 data_list, val_list = self.__split_categorical_data(
                         X, best_attribute)
+                branch_data = self.__get_clean_branchs(data_list, val_list, y)
                 # Add branchs to the node
-                for branch, attribute_val in zip(data_list, val_list):
-                    # Get the branch classes
-                    y_br = y.loc[branch.index]
+                for branch, labels, attribute_val_list in branch_data:
                     root.add_son(Question(
-                        best_attribute, attribute_val, operator.eq),
-                        self.__build_tree(branch, y_br, attribute_list))
+                        best_attribute, attribute_val_list, operator.eq),
+                        self.__build_tree(branch, labels, attribute_list))
             # Return node
             return root
+
+    def __get_clean_branchs(self, data_list, val_list, y):
+        """ Joins together the Leaf branchs with the same label
+        Eg:
+            - Input:
+                - a: val = 0, label = 0
+                - b: val = 1, label = 0
+                - c: val = 2, label = 1
+            - Output:
+                - a: val = [0,1], label = 0
+                - c: val = [2], label = 1
+        @return:
+            a list of tuple (X, y, attribute_value) for each branch
+        """
+        branch_list = []
+        branch_dict = {}
+        for branch, attribute_val in zip(data_list, val_list):
+            branch_labels = y.loc[branch.index]
+            item = (branch, branch_labels, [attribute_val])
+            labels = list(set(branch_labels))
+            if len(labels) == 1:
+                # Leaf branch:
+                label = labels[0]
+                if label in branch_dict:
+                    # Label already exists, we update only
+                    # the attribute value, X is not important because
+                    # it's a leaf node
+                    aux = branch_dict[label]
+                    aux[2].append(attribute_val)
+                    branch_dict[label] = aux
+                else:
+                    branch_dict[label] = item
+            else:
+                branch_list.append(item)
+        branch_list.extend(branch_dict.values())
+        return branch_list
+        
 
     def __select_attribute(self, X, y, attribute_list,
             metric='naive'):

@@ -1,6 +1,8 @@
 import numpy as np
 import operator
 
+import tools as tools
+
 class Node:
     def __init__(self, attribute):
         """
@@ -52,22 +54,37 @@ class Leaf:
 
 
 class Question:
-    def __init__(self, attribute, value, op):
+    def __init__(self, attribute, value_list, op):
+        """ If the data is continuous than value_list will contain
+        only one element otherwise one or multiple element """
         self.attribute = attribute
-        self.value = value
+        self.value_list = value_list
         self.op = op
 
-    def match(self, data):
-        val = data[self.attribute]
-        return self.op(val, self.value)
+    def match(self, X):
+        val = X[self.attribute]
+        if self.op == operator.eq:
+            # Categorical data
+            return val in self.value_list
+        else:
+            # Continuous data
+            return self.op(val, self.value_list[0])
 
     def __repr__(self):
         rep =''
         if self.op == operator.eq:
-            rep = "{} == {} ?".format(self.attribute,
-                    round(self.value, 2))
+            if len(self.value_list) == 1:
+                rep = self.attribute + " = " + self.value_list[0]
+            else:
+                rep = self.attribute + " in ["
+                for val in self.value_list:
+                    if tools.tools.is_numeric(val):
+                        rep += round(val, 2) + ", "
+                    else:
+                        rep += val + ", "
+                rep += "]"
         else:
+            val = round(self.value_list[0], 2)
             x = "<=" if self.op == operator.le else ">"
-            rep = "%.2f %s %.2f" % (self.attribute, x,
-                round(self.value, 2))
+            rep = str(self.attribute) + " " + x + " " + str(val)
         return rep

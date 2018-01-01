@@ -82,12 +82,12 @@ def generate_tree_graph_aux(dot, node, root_node_id,
                 dot.node(str(node_id), str(son.label),
                         style="filled", fillcolor=color, color=color)
                 dot.edge(str(root_node_id), str(node_id),
-                        label=str(question.value))
+                        label=str(question))
             else:
                 generate_tree_graph_aux(dot, son, node_id,
                         label_color_dict)
                 dot.edge(str(root_node_id), str(node_id),
-                        label=str(question.value))
+                        label=str(question))
 
 def get_label_colors(labels):
     node_colors = ['aquamarine', 'bisque', 'azure3', 'brown1',
