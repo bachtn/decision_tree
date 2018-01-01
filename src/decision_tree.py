@@ -5,15 +5,48 @@ import copy
 
 from node import Node, Leaf, Question
 import tools.tools as tools
+import pruning_algorithms.pruning as pruning
 
 class DecisionTree:
     def __init__(self, split_function):
         self.split_function = split_function
         self.tree = None
         
-    def fit(self, X, y):
+    def fit(self, X, y,
+            prune=False, metric='rep', X_val=None, y_val=None):
         self.attribute_list = list(X.columns)
         self.tree = self.__build_tree(X, y, self.attribute_list.copy())
+        if prune:
+            if X_val is None or y_val is None:
+                raise ValueError("To prune the tree, you need \
+                                  to give the validation set")
+            else:
+                self.prune(X_val, y_val, metric)
+
+
+    def predict(self, X):
+        node = self.tree
+        predictions = []
+        for record_idx, _ in X.iterrows():
+            if isinstance(node, Leaf):
+                predictions.append(node.label)
+            else: 
+                predictions.append(node.predict(X.loc[record_idx]))
+        return predictions
+
+    def score(self, X, y):
+        return self.tree.get_accuracy(X, y)
+        """
+        if y.shape[0] == 0:
+            return 0
+        y = np.array(y)
+        predictions = np.array(self.predict(X))
+        return (predictions == y).sum() / y.shape[0]
+        """
+
+    def prune(self, X, y, metric='rep'):
+        if metric == 'rep':
+            self.tree = pruning.reduced_error_pruning(self.tree, X, y)
 
     def __build_tree(self, X, y, attribute_list):
         # Only one class left
@@ -102,22 +135,3 @@ class DecisionTree:
             branch_data_list.append(branch_data)
         return branch_data_list, attribute_value_list
 
-    def predict(self, X):
-        node = self.tree
-        predictions = []
-        for record_idx, _ in X.iterrows():
-            if isinstance(node, Leaf):
-                predictions.append(node.label)
-            else:
-                predictions.append(node.predict(X.loc[record_idx]))
-        return predictions
-
-    def score(self, X, y):
-        if y.shape[0] == 0:
-            return 0
-        y = np.array(y)
-        predictions = np.array(self.predict(X))
-        return (predictions == y).sum() / y.shape[0]
-
-    def prune(self, metric='rep'):
-        pass

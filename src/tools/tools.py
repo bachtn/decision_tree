@@ -32,7 +32,7 @@ def get_majority_vote(target_vector):
     """ Return the class that occurs the most """
     return target_vector.value_counts().idxmax()
 
-def is_continuous(data_vector, numeric_threshold=5):
+def is_continuous(data_vector, numeric_threshold=4):
     """ Returns True if the `data_vector` contains continuous values
     @param data_vector (dataframe column)
     @param numeric_threshold (int) the threshold value to detect
@@ -53,30 +53,54 @@ def is_continuous(data_vector, numeric_threshold=5):
     return (is_numeric(data_vector.iloc[0]) and
             nb_unique_values > numeric_threshold)
 
-def generate_tree_graph(tree, graph_name="decision_tree.gv",
-        display=False):
+def generate_tree_graph(tree, labels,
+        graph_name="decision_tree_train", display=False):
     dot = Digraph()
     root_node_id = uuid.uuid4()
-    generate_tree_graph_aux(dot, tree, root_node_id)
+    label_color_dict = get_label_colors(labels)
+    generate_tree_graph_aux(dot, tree, root_node_id, label_color_dict)
     if display:
         dot.render('tree_graph/' + graph_name, view=True)
+    else:
+        dot.render('tree_graph/' + graph_name, view=False)
     return dot
-    
-def generate_tree_graph_aux(dot, node, root_node_id):
+
+
+
+def generate_tree_graph_aux(dot, node, root_node_id,
+        label_color_dict):
     if isinstance(node, Leaf):
-        dot.node(str(uuid.uuid4()), str(node.label))
+        color = label_color_dict[node.label]
+        dot.node(str(uuid.uuid4()), str(node.label),
+                style="filled", fillcolor=color, color=color)
     else:
         dot.node(str(root_node_id), node.attribute)
         for question, son in node.sons:
             node_id = uuid.uuid4()
             if isinstance(son, Leaf):
-                dot.node(str(node_id), str(son.label))
+                color = label_color_dict[son.label]
+                dot.node(str(node_id), str(son.label),
+                        style="filled", fillcolor=color, color=color)
                 dot.edge(str(root_node_id), str(node_id),
                         label=str(question.value))
             else:
-                generate_tree_graph_aux(dot, son, node_id)
+                generate_tree_graph_aux(dot, son, node_id,
+                        label_color_dict)
                 dot.edge(str(root_node_id), str(node_id),
                         label=str(question.value))
+
+def get_label_colors(labels):
+    node_colors = ['aquamarine', 'bisque', 'azure3', 'brown1',
+        'burlywood1', 'cadetblue3', 'chartreuse', 'chocolate1',
+        'coral', 'cornflowerblue', 'darkgoldenrod1', 'darkgreen',
+        'darkolivegreen1', 'darkorange1', 'darkturquoise',
+        'deeppink', 'dimgray', 'gold3', 'gray42', 'greenyellow']
+    label_dict = {}
+    for idx, label in enumerate(labels):
+        label_dict[label] = node_colors[idx] \
+                if idx < len(node_colors) else node_colors[0]
+    return label_dict
+
 
 def is_numeric(value):    
     return isinstance(value, Number)

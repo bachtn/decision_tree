@@ -1,3 +1,4 @@
+import numpy as np
 import operator
 
 class Node:
@@ -13,20 +14,42 @@ class Node:
     def add_son(self, question, node):
         self.sons.append((question, node))
 
-    def predict(self, data):
+    def predict(self, X):
         for question, son in self.sons:
-            if question.match(data):
+            if question.match(X):
                 if isinstance(son, Leaf):
                     return son.label
                 else:
-                    return son.predict(data)
+                    return son.predict(X)
+
+    def get_accuracy(self, X, y):
+        if y.shape[0] == 0:
+            return 0
+        y = np.array(y)
+        predictions = np.array(self.get_predictions(X))
+        return (predictions == y).sum() / len(y)
+
+    def get_predictions(self, X):
+        predictions = []
+        for record_idx, _ in X.iterrows():
+            if isinstance(self, Leaf):
+                predictions.append(self.label)
+            else:
+                predictions.append(self.predict(X.loc[record_idx]))
+        return predictions
 
 class Leaf:
     def __init__(self, label):
         self.label = label
 
+    def get_accuracy(self, X, y):
+        predictions = np.array([self.label] * len(y))
+        return (predictions == y).sum() / len(y)
+        
+    
     def __repr__(self):
         return "--> Predicted value : {}".format(self.label)
+
 
 class Question:
     def __init__(self, attribute, value, op):
@@ -41,8 +64,10 @@ class Question:
     def __repr__(self):
         rep =''
         if self.op == operator.eq:
-            rep = "{} == {} ?".format(self.attribute, self.value)
+            rep = "{} == {} ?".format(self.attribute,
+                    round(self.value, 2))
         else:
             x = "<=" if self.op == operator.le else ">"
-            rep = "%.2f %s %.2f" % (self.attribute, x, self.value)
+            rep = "%.2f %s %.2f" % (self.attribute, x,
+                round(self.value, 2))
         return rep
