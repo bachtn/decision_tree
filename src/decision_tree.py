@@ -5,10 +5,11 @@ import copy
 
 from node import Node, Leaf, Question
 import tools.tools as tools
+import split_metrics.gini_impurity as gini
 import pruning_algorithms.pruning as pruning
 
 class DecisionTree:
-    def __init__(self, split_function):
+    def __init__(self, split_function=gini.get_gini_split):
         self.split_function = split_function
         self.tree = None
         

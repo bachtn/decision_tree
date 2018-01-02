@@ -5,16 +5,12 @@ from decision_tree import DecisionTree
 
 # All datasets should be in the dataset folder
 dataset_dict = {
-    'tennis': {'label': 'PlayTennis', 'filename': 'play_tennis.csv',
-        'delimiter': ','},
-    'mushrooms' : {'label': 'class', 'filename': 'mushrooms.csv',
-        'delimiter': ','},
-    'iris' : {'label': 'class', 'filename': 'iris.csv',
-        'delimiter': ','},
-    'chess' : {'label': 'result', 'filename': 'chess.csv',
-        'delimiter': ','},
-    'income' : {'label': 'income', 'filename': 'adult.csv',
-        'delimiter': ','}
+    'tennis': {'label': 'PlayTennis', 'filename': 'play_tennis.csv'},
+    'mushrooms' : {'label': 'class', 'filename': 'mushrooms.csv'},
+    'iris' : {'label': 'class', 'filename': 'iris.csv'},
+    'spambase' : {'label': 'spam', 'filename': 'spambase.csv'},
+    'magic_telescope' : {'label': 'class', 'filename': 'magic.csv'},
+    'pima' : {'label': 'class', 'filename': 'pima.csv'}
 }
 
 if __name__=='__main__':

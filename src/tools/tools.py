@@ -65,6 +65,13 @@ def generate_tree_graph(tree, labels,
         dot.render('tree_graph/' + graph_name, view=False)
     return dot
 
+def data_encoder(data):
+    """Transforms the data features from string to int"""
+    for column in list(data.columns):
+        if not is_continuous(data[column]):
+            for idx, val in enumerate(data[column].unique()):
+                data.loc[data[column] == val, column] = idx
+    return data
 
 
 def generate_tree_graph_aux(dot, node, root_node_id,
@@ -118,7 +125,7 @@ def get_dataset(dataset_name, datasets_dict):
     dataset_info = datasets_dict[dataset_name]
     path = '../datasets/' + dataset_info['filename']
     
-    data = pd.read_csv(path, delimiter=dataset_info['delimiter'])
+    data = pd.read_csv(path, delimiter=',')
     label = dataset_info['label']
     attribute_list = list(data.columns)
     attribute_list.remove(label)

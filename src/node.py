@@ -74,17 +74,18 @@ class Question:
         rep =''
         if self.op == operator.eq:
             if len(self.value_list) == 1:
-                rep = self.attribute + " = " + self.value_list[0]
+                rep = str(self.value_list[0])
             else:
-                rep = self.attribute + " in ["
-                for val in self.value_list:
+                rep = "["
+                for idx, val in enumerate(self.value_list):
+                    aux = ', ' if idx < len(self.value_list) - 1 else ''
                     if tools.tools.is_numeric(val):
-                        rep += round(val, 2) + ", "
+                        rep += str(round(float(val), 2)) + aux
                     else:
-                        rep += val + ", "
+                        rep += str(val) + aux
                 rep += "]"
         else:
-            val = round(self.value_list[0], 2)
+            val = round(float(self.value_list[0]), 2)
             x = "<=" if self.op == operator.le else ">"
             rep = str(self.attribute) + " " + x + " " + str(val)
         return rep
