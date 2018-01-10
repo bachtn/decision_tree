@@ -65,15 +65,6 @@ def generate_tree_graph(tree, labels,
         dot.render('tree_graph/' + graph_name, view=False)
     return dot
 
-def data_encoder(data):
-    """Transforms the data features from string to int"""
-    for column in list(data.columns):
-        if not is_continuous(data[column]):
-            for idx, val in enumerate(data[column].unique()):
-                data.loc[data[column] == val, column] = idx
-    return data
-
-
 def generate_tree_graph_aux(dot, node, root_node_id,
         label_color_dict):
     if isinstance(node, Leaf):
@@ -81,7 +72,8 @@ def generate_tree_graph_aux(dot, node, root_node_id,
         dot.node(str(uuid.uuid4()), str(node.label),
                 style="filled", fillcolor=color, color=color)
     else:
-        dot.node(str(root_node_id), node.attribute)
+        attribute = node.sons[0][0].attribute
+        dot.node(str(root_node_id), attribute)
         for question, son in node.sons:
             node_id = uuid.uuid4()
             if isinstance(son, Leaf):
@@ -108,6 +100,13 @@ def get_label_colors(labels):
                 if idx < len(node_colors) else node_colors[0]
     return label_dict
 
+def data_encoder(data):
+    """Transforms the data features from string to int"""
+    for column in list(data.columns):
+        if not is_continuous(data[column]):
+            for idx, val in enumerate(data[column].unique()):
+                data.loc[data[column] == val, column] = idx
+    return data
 
 def is_numeric(value):    
     return isinstance(value, Number)

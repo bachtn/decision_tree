@@ -1,29 +1,16 @@
 import numpy as np
 import pandas as pd
-import operator
-import copy
-
-from node import Node, Leaf, Question
+from sklearn import svm
 import tools.tools as tools
-import split_metrics.gini_impurity as gini
-import pruning_algorithms.pruning as pruning
 
 class DecisionTree:
     def __init__(self, split_function=gini.get_gini_split):
         self.split_function = split_function
         self.tree = None
         
-    def fit(self, X, y,
-            prune=False, metric='rep', X_val=None, y_val=None):
+    def fit(self, X, y):
         self.attribute_list = list(X.columns)
         self.tree = self.__build_tree(X, y, self.attribute_list.copy())
-        if prune:
-            if X_val is None or y_val is None:
-                raise ValueError("To prune the tree, you need \
-                                  to give the validation set")
-            else:
-                self.prune(X_val, y_val, metric)
-
 
     def predict(self, X):
         node = self.tree
@@ -37,11 +24,7 @@ class DecisionTree:
 
     def score(self, X, y):
         return self.tree.get_accuracy(X, y)
-
-    def prune(self, X, y, metric='rep'):
-        if metric == 'rep':
-            self.tree = pruning.reduced_error_pruning(self.tree, X, y)
-
+    
     def __build_tree(self, X, y, attribute_list):
         # Only one class left
         left_classes = set(y)
@@ -53,29 +36,19 @@ class DecisionTree:
             label = tools.get_majority_vote(y)
             return Leaf(label)
         else:
-            best_attribute, candidate_split = self.__select_attribute(
+            best_attribute, is_continuous = self.__select_attribute(
                     X, y, attribute_list, metric='naive')
             # Create node
             root = Node()
             # Update the attribute list
-            #attribute_list.remove(best_attribute)
-            if candidate_split is not None:
-                # Continuous data
-                # Get less_or_equal and greater_than branchs
-                le_branch, gt_branch = self.__split_continuous_data(
-                        X, best_attribute, candidate_split)
-                # Get branchs labels
-                y_le = y.loc[le_branch.index]
-                y_gt = y.loc[gt_branch.index]
-                # Add branchs
-                # Less or equal branch
-                root.add_son(Question(
-                   best_attribute, [candidate_split], operator.le),
-                   self.__build_tree(le_branch, y_le, attribute_list))
-                # Greater than branch
-                root.add_son(Question(
-                   best_attribute, [candidate_split], operator.gt),
-                   self.__build_tree(gt_branch, y_gt, attribute_list))
+            attribute_list.remove(best_attribute)
+            if is_continuous:
+                # Continuous data -> Train an SVM classifier
+                clf, X_list, y_list, class_list = self.__split_continuous_data(X, y)
+                for data, labels, c in zip (X_list, y_list, class_list):
+                    root.add_son(Question(
+                        is_continuous, best_attribute, c, clf),
+                        self.__build_tree(data, labels, attribute_list))
             else:
                 # Categorical data
                 # get the branchs and their attribute_value
@@ -85,7 +58,7 @@ class DecisionTree:
                 # Add branchs to the node
                 for branch, labels, attribute_val_list in branch_data:
                     root.add_son(Question(
-                        best_attribute, attribute_val_list, operator.eq),
+                        is_continuous, best_attribute, attribute_val_list),
                         self.__build_tree(branch, labels, attribute_list))
             # Return node
             return root
@@ -127,8 +100,7 @@ class DecisionTree:
         return branch_list
         
 
-    def __select_attribute(self, X, y, attribute_list,
-            metric='naive'):
+    def __select_attribute(self, X, y, attribute_list, metric='naive'):
         """
         @return
             - Continuous data -> (best_attribute, split_candidate)
@@ -149,12 +121,8 @@ class DecisionTree:
         # Get best attribute item
         best_attribute_item = max(split_list, key=lambda x: x[1])
         return best_attribute_item[0], best_attribute_item[2]
-        
 
-    def __split_continuous_data(self, X, attribute, candidate_split):
-        le_branch = X[operator.le(X[attribute], candidate_split)]
-        gt_branch = X[operator.gt(X[attribute], candidate_split)]
-        return le_branch, gt_branch
+
 
     def __split_categorical_data(self, X, attribute): 
         branch_data_list = []; attribute_value_list = []
@@ -162,4 +130,17 @@ class DecisionTree:
             attribute_value_list.append(attribute_val)
             branch_data_list.append(branch_data)
         return branch_data_list, attribute_value_list
-
+    
+    def __split_continuous_data(self, X, y):
+        clf = svm.LinearSVC()
+        clf.fit(X, y)
+        predicted_classes = clf.predict(X)
+        X_list = []; y_list = []; class_list = []
+        for c in np.unique(predicted_classes):
+            sample_idxs = np.where(predicted_classes == c)
+            # we have the index of the sample in the array not in the
+            # dataframe -> use iloc instead of loc
+            X_list.append(X.iloc[sample_idxs])
+            y_list.append(y.iloc[sample_idxs])
+            class_list.append(c)
+        return clf, X_list, y_list, class_list
