@@ -19,7 +19,8 @@ class Node:
                     return son.predict(X)
 
     def get_accuracy(self, X, y):
-        if y.shape[0] == 0:
+        if len(y) == 0:
+            print('Warning: the data is empty (size = 0)')
             return 0
         y = np.array(y)
         predictions = np.array(self.get_predictions(X))
@@ -34,7 +35,11 @@ class Node:
                 predictions.append(self.predict(X.loc[record_idx]))
         return predictions
 
-class Question_c:
+    def __repr__(self):
+        for son in self.sons:
+            print(son)
+
+class Question:
     def __init__(self, is_continous, attribute, value_list, clf=None):
         self.is_continous = is_continous
         self.attribute = attribute
@@ -74,6 +79,8 @@ class Leaf:
         self.label = label
 
     def get_accuracy(self, X, y):
+        if len(y) == 0:
+            return 0
         predictions = np.array([self.label] * len(y))
         return (predictions == y).sum() / len(y)
         
@@ -81,7 +88,7 @@ class Leaf:
     def __repr__(self):
         return "--> Predicted value : {}".format(self.label)
 
-class Question:
+class QuestionClassic:
     def __init__(self, attribute, value_list, op):
         """ If the data is continuous than value_list will contain
         only one element otherwise one or multiple element """

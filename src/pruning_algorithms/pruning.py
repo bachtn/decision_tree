@@ -5,7 +5,7 @@ from node import Node, Leaf, Question
 
 def reduced_error_pruning(current_node, X, y):
     """ X, y are validation sets """
-    if isinstance(current_node, Leaf):
+    if isinstance(current_node, Leaf) or len(y) == 0:
         return current_node
 
     current_accuracy = current_node.get_accuracy(X, y)

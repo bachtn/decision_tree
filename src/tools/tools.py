@@ -4,7 +4,7 @@ from graphviz import Digraph
 import uuid
 from numbers import Number
 
-from node import Node, Leaf, Question
+from node import Leaf
 
 def train_test_split(X, y, train_percent, test_percent,
         display_info=False):
@@ -65,6 +65,58 @@ def generate_tree_graph(tree, labels,
         dot.render('tree_graph/' + graph_name, view=False)
     return dot
 
+def is_numeric(value):    
+    return isinstance(value, Number)
+
+def get_dataset(dataset_name, datasets_dict, nb_feature=10):
+    """ Returns the dataframe, name of the label column
+    and a list with the column name of the attributes.
+    
+    @param dataset_name (str): the name of the dataset
+        in the previously defined dict (dataset_dict)
+    
+    @param dataset_dict (dict): A dictionary with all
+        the datasets informations.    
+    """
+    if dataset_name == 'mnist':
+        data, label, attribute_list = get_mnist_dataset(nb_feature)
+    else:
+        dataset_info = datasets_dict[dataset_name]
+        path = '../datasets/' + dataset_info['filename']
+        data = pd.read_csv(path, delimiter=',')
+        label = dataset_info['label']
+        attribute_list = list(data.columns)
+        attribute_list.remove(label)
+    return data, label, attribute_list
+
+def get_mnist_dataset(nb_feature=2):
+    from sklearn.datasets import fetch_mldata
+    mnist = fetch_mldata("MNIST original")
+    # rescale the data
+    X, y = mnist.data / 255., mnist.target
+    data, attribute_list, label = get_dataframe(X, y, nb_features=nb_feature)
+    return data, label, attribute_list
+
+def get_dataframe(X, y, nb_features=2, label='class'):
+    if X.shape[0] > nb_features:
+        X = reduce_dim(X, nb_features)
+    # Set label and attribute list
+    attribute_list = ['feature_' + str(i) for i in range(nb_features)]
+    # Converty data to dataframe
+    dataframe = pd.DataFrame(data=X, columns=attribute_list)
+    dataframe[label] = y
+    # Shuffle data
+    dataframe = dataframe.sample(frac=1).reset_index(drop=True)
+    return (dataframe, attribute_list, label)
+
+def reduce_dim(X, nb_features=2):
+    from sklearn.decomposition import PCA
+    # Dimensionality reduction with PCA
+    pca = PCA(n_components=nb_features)
+    pca.fit(X)
+    X = pca.transform(X)
+    return X
+
 def generate_tree_graph_aux(dot, node, root_node_id,
         label_color_dict):
     if isinstance(node, Leaf):
@@ -88,6 +140,14 @@ def generate_tree_graph_aux(dot, node, root_node_id,
                 dot.edge(str(root_node_id), str(node_id),
                         label=str(question))
 
+def data_encoder(data):
+    """Transforms the data features from string to int"""
+    for column in list(data.columns):
+        if not is_continuous(data[column]):
+            for idx, val in enumerate(data[column].unique()):
+                data.loc[data[column] == val, column] = idx
+    return data
+
 def get_label_colors(labels):
     node_colors = ['aquamarine', 'bisque', 'azure3', 'brown1',
         'burlywood1', 'cadetblue3', 'chartreuse', 'chocolate1',
@@ -99,36 +159,6 @@ def get_label_colors(labels):
         label_dict[label] = node_colors[idx] \
                 if idx < len(node_colors) else node_colors[0]
     return label_dict
-
-def data_encoder(data):
-    """Transforms the data features from string to int"""
-    for column in list(data.columns):
-        if not is_continuous(data[column]):
-            for idx, val in enumerate(data[column].unique()):
-                data.loc[data[column] == val, column] = idx
-    return data
-
-def is_numeric(value):    
-    return isinstance(value, Number)
-
-def get_dataset(dataset_name, datasets_dict):
-    """ Returns the dataframe, name of the label column
-    and a list with the column name of the attributes.
-    
-    @param dataset_name (str): the name of the dataset
-        in the previously defined dict (dataset_dict)
-    
-    @param dataset_dict (dict): A dictionary with all
-        the datasets informations.    
-    """
-    dataset_info = datasets_dict[dataset_name]
-    path = '../datasets/' + dataset_info['filename']
-    
-    data = pd.read_csv(path, delimiter=',')
-    label = dataset_info['label']
-    attribute_list = list(data.columns)
-    attribute_list.remove(label)
-    return data, label, attribute_list
 
 class ObjectView():
     """

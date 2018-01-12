@@ -39,7 +39,7 @@ def get_partition_entropy(attribute_vector, target_vector):
         partition_entropy += prob * get_vector_entropy(val_target_vector)
     return partition_entropy
 
-def get_information_gain(attribute_vector, target_vector):
+def get_information_gain(attribute_vector, target_vector, metric=''):
     """ Returns the information gain if we choose to split the data
     on the candidate attribute.
     
@@ -48,9 +48,11 @@ def get_information_gain(attribute_vector, target_vector):
     """
     target_entropy = get_vector_entropy(target_vector)
     partition_entropy = get_partition_entropy(attribute_vector, target_vector)
-    return target_entropy - partition_entropy
+    information_gain = target_entropy - partition_entropy
+    return (information_gain, None)
 
-def get_information_gain_ratio(attribute_vector, target_vector):
-    information_gain = get_information_gain(attribute_vector, target_vector)
+def get_information_gain_ratio(attribute_vector, target_vector, metric=''):
+    information_gain, _ = get_information_gain(attribute_vector, target_vector)
     split_entropy = get_vector_entropy(attribute_vector)
-    return information_gain / split_entropy
+    information_gain_ratio = information_gain / split_entropy
+    return (information_gain_ratio, None)
