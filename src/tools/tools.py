@@ -180,3 +180,10 @@ def print_tree(node, spacing=""):
         if question:
             print(spacing, question)
         print_tree(son, " ----")
+
+def get_models_dict(models):
+    models_dict = {}
+    for idx, model in enumerate(models):
+        model_name = str(model.__str__).split(' ')[3]
+        models_dict[idx] = model_name
+    return models_dict

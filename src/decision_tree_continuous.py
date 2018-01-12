@@ -12,9 +12,16 @@ class DecisionTreeContinuous(DecisionTree):
         DecisionTree.__init__(self, split_function)
         self.stop_threshold = stop_threshold
 
-    def fit(self, X, y):
+    def fit(self, X, y,
+            prune=False, metric='rep', X_val=None, y_val=None):
         self.attribute_list = list(X.columns)
         self.tree = self.__build_tree(X, y, self.attribute_list.copy())
+        if prune:
+            if X_val is None or y_val is None:
+                raise ValueError("To prune the tree, you need \
+                                  to give the validation set")
+            else:
+                super(DecisionTreeContinuous, self).prune(X_val, y_val, metric)
 
     def __build_tree(self, X, y, attribute_list):
         # Only one class left
@@ -68,7 +75,7 @@ class DecisionTreeContinuous(DecisionTree):
 
     def __split_continuous_data(self, X, y):
         clf = svm.LinearSVC()
-        clf.fit(X, y)
+        clf.fit(X, list(y))
         predicted_classes = clf.predict(X)
         X_list = []; y_list = []; class_list = []
         for c in np.unique(predicted_classes):

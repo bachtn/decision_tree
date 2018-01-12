@@ -94,5 +94,10 @@ class DecisionTree:
                 branch_list.append(item)
         branch_list.extend(branch_dict.values())
         return branch_list
-        
+
+    def clean_tree(self, node):
+        if isinstance(node, Leaf):
+            return node
+        for question, son in node.sons:
+            pass
 

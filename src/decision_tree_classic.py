@@ -22,7 +22,7 @@ class DecisionTreeClassic(DecisionTree):
                 raise ValueError("To prune the tree, you need \
                                   to give the validation set")
             else:
-                self.prune(X_val, y_val, metric)
+                super(DecisionTreeClassic, self).prune(X_val, y_val, metric)
     
     def __build_tree(self, X, y, attribute_list):
         # Only one class left
